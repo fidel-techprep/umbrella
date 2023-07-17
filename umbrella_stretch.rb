@@ -41,13 +41,13 @@ full_location_name = raw_location["results"][0]["formatted_address"]
 p_weather_url = "https://api.pirateweather.net/forecast/#{PIRATE_WEATHER_KEY}/#{coords["lat"]},#{coords["lng"]}"
 
 # Break down weather data
-raw_forecast = JSON.parse(HTTP.get(p_weather_url))
-summary = raw_forecast["hourly"]["data"][0]["summary"]
-temperature = raw_forecast["hourly"]["data"][0]["temperature"]
-precipitation_prob = (raw_forecast["hourly"]["data"][0]["precipProbability"] * 100).to_i
-wind_speed = raw_forecast["hourly"]["data"][0]["windSpeed"]
-humidity = (raw_forecast["hourly"]["data"][0]["humidity"] * 100).to_i
-uv_index = raw_forecast["hourly"]["data"][0]["uvIndex"].to_i
+raw_forecast = JSON.parse(HTTP.get(p_weather_url))["hourly"]["data"]
+summary = raw_forecast[0]["summary"]
+temperature = raw_forecast[0]["temperature"]
+precipitation_prob = (raw_forecast[0]["precipProbability"] * 100).to_i
+wind_speed = raw_forecast[0]["windSpeed"]
+humidity = (raw_forecast[0]["humidity"] * 100).to_i
+uv_index = raw_forecast[0]["uvIndex"].to_i
 
 # Display forecast data
 puts "-" * 112
@@ -59,7 +59,7 @@ puts "-" * 112
 puts "      Precipitation Probability: #{precipitation_prob}%    |    Humidity: #{humidity}%     |    Wind Speed: #{wind_speed} mph    |    UV Index: #{uv_index}"
 
 # Determine 12-hour window precipitation
-data_12hr_window = raw_forecast["hourly"]["data"][1..12]
+data_12hr_window = raw_forecast[1..12]
 future_precip = data_12hr_window.each{|hour| hour["hour"] = data_12hr_window.index(hour) + 1}
 
 # Print precipitation data if any and offer umbrella recommendation

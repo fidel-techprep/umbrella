@@ -1,14 +1,13 @@
 require "http"
 require "erb"
 require "json"
+require "ascii_charts"
 include ERB::Util
 
 # Retrieve API keys from the environment
 GMAPS_KEY, PIRATE_WEATHER_KEY = ENV.fetch("GMAPS_KEY"), ENV.fetch("PIRATE_WEATHER_KEY")
 
 # Display welcome message
-
-
 puts "*   __   __  __   __  _______  ______    _______  ___      ___      _______   *   _______  _______  _______   *";
 puts "   |  | |  ||  |_|  ||  _    ||    _ |  |       ||   |    |   |    |   _   |     |   _   ||       ||       |   ";
 puts "   |  | |  ||       || |_|   ||   | ||  |    ___||   |    |   |    |  |_|  |     |  |_|  ||    _  ||    _  |   ";
@@ -62,25 +61,14 @@ puts "      Precipitation Probability: #{precipitation_prob}%    |    Humidity: 
 # Determine 12-hour window precipitation
 data_12hr_window = raw_forecast["hourly"]["data"][1..12]
 future_precip = data_12hr_window.each{|hour| hour["hour"] = data_12hr_window.index(hour) + 1}
-future_precip.select!{|hour| hour["precipProbability"] >= 0.10}
 
 # Print precipitation data if any and offer umbrella recommendation
-if !future_precip.empty?
+if !future_precip.select{|hour| hour["precipProbability"] >= 0.10}.empty?
   puts "-" * 112
   puts "                                   Precipitation Probability for the next 12 Hours"
-  puts "-" * 112 
 
-  precip_string =  " " * 40
-
-  future_precip.each_with_index do | hour, index|
-    #puts "
-                                                  
-    precip_string += "#{hour["hour"]}hrs: #{(hour["precipProbability"] * 100).to_i}%   "
-    precip_string += ("\n" + (" " * 40)) if index > 0 && (index + 1) % 3 == 0
-    precip_string += (("-" * 36) + "\n" + (" " * 40)) if index > 0 && (index + 1) % 3 == 0
-  end 
-  
-  puts precip_string
+  chart_data = data_12hr_window.map{ |hour| [hour["hour"], (hour["precipProbability"] * 100).to_i]}
+  puts AsciiCharts::Cartesian.new(chart_data, :bar => true, :hide_zero => true).draw
   puts "-" * 112
   puts "-" * 112
   puts "                                 *-*-*-*-*  YOU MAY WANT TO CARRY AN UMBRELLA!!  *-*-*-*-*"
